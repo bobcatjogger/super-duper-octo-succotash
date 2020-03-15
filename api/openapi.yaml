@@ -1,0 +1,409 @@
+openapi: 3.0.0
+info:
+  title: BFTracks API
+  description: BFTracks is the official BigFoot Tracker for The Society to Uncover
+    and Spread the Truth (SUST)
+  contact:
+    name: Jake Gotberg
+    email: Jacob@Gotberg.net
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/hirejake/BFTracks/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: admins
+  description: Secured Admin-only calls
+- name: users
+  description: Operations available to regular users
+paths:
+  /sightings:
+    get:
+      tags:
+      - users
+      summary: Retrieve all sightings
+      description: |
+        List Sightings (paginated by 1000)
+      operationId: listSightings
+      parameters:
+      - name: skip
+        in: query
+        description: number of records to skip for pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+      - name: limit
+        in: query
+        description: maximum number of records to return
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 1000
+          minimum: 0
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: paginated list of sightings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sighting'
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      x-swagger-router-controller: Users
+    put:
+      tags:
+      - users
+      summary: Update an existing sighting
+      operationId: updateSighting
+      requestBody:
+        $ref: '#/components/requestBodies/Sighting'
+      responses:
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Sighting not found
+        "405":
+          description: Validation exception
+      x-swagger-router-controller: Users
+    post:
+      tags:
+      - users
+      summary: add a sighting
+      description: Adds a Sasquatch sighting to the system
+      operationId: addSighting
+      requestBody:
+        description: Sighting to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sighting'
+      responses:
+        "201":
+          description: Sighting created
+        "400":
+          description: Invalid input, sighting invalid
+      x-swagger-router-controller: Users
+  /sightings/{sightingId}:
+    get:
+      tags:
+      - users
+      summary: Find sighting by ID
+      description: Returns a single sighting
+      operationId: getSightingById
+      parameters:
+      - name: sightingId
+        in: path
+        description: ID of sighting to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sighting'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Sighting'
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Sighting not found
+      x-swagger-router-controller: Users
+    post:
+      tags:
+      - users
+      summary: Updates a sighting with form data
+      operationId: updateSightingWithForm
+      parameters:
+      - name: sightingId
+        in: path
+        description: ID of sighting that needs to be updated
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/body'
+      responses:
+        "405":
+          description: Invalid input
+      x-swagger-router-controller: Users
+    delete:
+      tags:
+      - users
+      summary: Deletes a sighting
+      operationId: deleteSighting
+      parameters:
+      - name: sightingId
+        in: path
+        description: Sighting id to delete
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Sighting not found
+      x-swagger-router-controller: Users
+  /sightings/findByTags:
+    get:
+      tags:
+      - users
+      summary: Finds Sightings by tags
+      description: |
+        Finds sightings based on if any or all of the tags match.
+        Muliple tags can be provided with comma separated strings.
+      operationId: findSightingsByTags
+      parameters:
+      - name: tags
+        in: query
+        description: Tags to filter by
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+        example: '"hill","dark-brown"'
+      - name: searchType
+        in: query
+        description: |
+          Search for tags that match Any of the tags or All of
+          the provided tags
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+        example: All
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sighting'
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sighting'
+        "400":
+          description: Invalid tag value
+      x-swagger-router-controller: Users
+  /sightings/{sightingId}/distanceTo/{sightingId2}:
+    get:
+      tags:
+      - users
+      summary: Calculate distance
+      description: Calculate the distance between two sightings
+      operationId: getDistance
+      parameters:
+      - name: sightingId
+        in: path
+        description: |
+          ID of the first sighting (order does not matter)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int32
+      - name: sightingId2
+        in: path
+        description: |
+          ID of the second sighting (order does not matter)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: distance in km between 2 sightings
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 42.7 km
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: string
+                example: 42.7 km
+        "400":
+          description: bad input parameter
+      x-swagger-router-controller: Users
+  /sightings/{sightingId}/findNearest:
+    get:
+      tags:
+      - users
+      summary: Finds the nearest sightings
+      description: "List nearest sightings within a certain distance or \nlists the\
+        \ nearest [count] sightings (paginated by 1000).\n"
+      operationId: getNearest
+      parameters:
+      - name: sightingId
+        in: path
+        description: ID of the sighting
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int32
+      - name: proximity
+        in: query
+        description: |
+          How close must the other sighting be in km to be included.
+          (optional)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+      - name: count
+        in: query
+        description: |
+          How many other sighting should be included. (optional)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+      - name: skip
+        in: query
+        description: number of records to skip for pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+      - name: limit
+        in: query
+        description: maximum number of records to return
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 1000
+          minimum: 0
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: paginated list of sightings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sighting'
+                x-content-type: application/json
+        "400":
+          description: bad input parameter
+      x-swagger-router-controller: Users
+components:
+  schemas:
+    Sighting:
+      required:
+      - latitude
+      - longitude
+      - reportedAt
+      - witnessDescription
+      type: object
+      properties:
+        witnessDescription:
+          type: string
+          example: Etiam vel augue.
+        latitude:
+          type: string
+          example: "40.67262028"
+        longitude:
+          type: string
+          example: "40.67262028"
+        reportedAt:
+          type: string
+          format: date-time
+        tags:
+          type: string
+          example: black,bushes,sad,morning
+        id:
+          type: integer
+          format: int64
+          example: 1001
+        createdAt:
+          type: string
+          format: date-time
+      example:
+        reportedAt: 2000-01-23T04:56:07.000+00:00
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        witnessDescription: Etiam vel augue.
+        latitude: "40.67262028"
+        id: 1001
+        longitude: "40.67262028"
+        tags: black,bushes,sad,morning
+    body:
+      type: object
+      properties:
+        witnessDescription:
+          type: string
+          description: |
+            Updated witness description of the sighting
+        latitude:
+          type: string
+          description: Updated latitude of the sighting
+        longitude:
+          type: string
+          description: Updated longitude of the sighting
+        tags:
+          type: string
+          description: Updated list of tags for the sighting
+  requestBodies:
+    Sighting:
+      description: |
+        Sighting object that needs to be added to the database
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Sighting'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/Sighting'
+      required: true
