@@ -102,3 +102,8 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Don't send the assessment source folder up to GitHub
+sasquatch-sightings/
+
+.idea

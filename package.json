@@ -4,8 +4,8 @@
   "description": "BFTracks is the official BigFoot Tracker for The Society to Uncover and Spread the Truth (SUST)",
   "main": "index.js",
   "scripts": {
-	"prestart": "npm install",
-	"start": "node index.js"
+    "prestart": "npm install",
+    "start": "node index.js"
   },
   "keywords": [
     "swagger"
@@ -15,6 +15,7 @@
   "dependencies": {
     "connect": "^3.2.0",
     "js-yaml": "^3.3.0",
+    "minimist": "^1.2.2",
     "oas3-tools": "^2.0.2"
   }
 }
